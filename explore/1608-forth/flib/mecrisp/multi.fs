@@ -163,6 +163,45 @@ task: lowpower-task
     again ;
 
 \ --------------------------------------------------
+\  Task-aware stack information
+\ --------------------------------------------------
+
+\ get task stack pointer
+: task-sp ( task -- addr)
+  2 cells + @
+  ;
+
+\ bottom of task parameter stack
+: task-bsp ( task -- addr )
+  4 cells + stackspace +
+  inline ;
+
+\ bottom of task return stack
+: task-brp ( task -- raddr )
+  4 cells + stackspace 2* +
+  inline ;
+
+: boot-task? ( -- flag )
+  up @ boot-task =
+  inline ;
+
+: depth ( -- depth )
+  boot-task? if
+    depth
+  else
+    sp@ up @ task-bsp swap - 4 / 1+ \ grab sp@ first or it's value changes
+  then
+  ;
+
+: rdepth ( -- depth )
+  boot-task? if
+    rdepth 1- \ compensate for the extra indirection level
+  else
+    up @ task-brp rp@ - 4 / 1+
+  then
+  ;
+
+\ --------------------------------------------------
 \  Examples
 \ --------------------------------------------------
 
